@@ -268,7 +268,7 @@
     {{-- <h2>Weekly Coding Challenge #1: Sign in/up Form</h2> --}}
     <div class="container" id="container">
         <div class="form-container sign-up-container">
-            <form action="#">
+            <form >
                 <h1>Create Account</h1>
                 <div class="social-container">
                     <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
@@ -283,8 +283,13 @@
             </form>
         </div>
         <div class="form-container sign-in-container">
-            <form onsubmit="login(event)">
+            <form method="POST" action="{{ route('check.login') }}">
+                @csrf
+                @method('POST')
                 <h1>Sign in</h1>
+                @if (session('status'))
+                    <span>{{ session('status') }}</span>
+                @endif
                 {{-- <div class="social-container">
                     <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
@@ -292,7 +297,13 @@
                 </div>
                 <span>or use your account</span> --}}
                 <input type="text" placeholder="Username" name="username"/>
-                <input type="password" placeholder="Password" />
+                @error('username')
+                    <span>{{ $message }}</span>
+                @enderror
+                <input type="password" placeholder="Password" name="password"/>
+                @error('password')
+                    <span>{{ $message }}</span>
+                @enderror
                 {{-- <a href="#">Forgot your password?</a> --}}
                 <button>Sign In</button>
             </form>
@@ -306,29 +317,52 @@
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h2>Hai, Selamat Datang!</h2>
-                    <p>Website Sistem Tanda Tangan Berbasis Digital</p>
+                    <p id="haha">Website Sistem Tanda Tangan Berbasis Digital</p>
                     {{-- <button class="ghost" id="signUp">Sign Up</button> --}}
                 </div>
             </div>
         </div>
     </div>
+    <meta name="token" content="{{ csrf_token() }}">
+    <meta name="base-url" content="{{ config('app.url') }}">
 
+    <script src="{{ asset('assets/js/jquery.js') }}"></script>
+    <script src="{{ asset('assets/js/crud.js') }}"></script>
     <script>
+        const token = $('meta[name="token"]').attr('content');
+        const baseUrl = $('meta[name=base-url]').attr('content');
         const signUpButton = document.getElementById('signUp');
         const signInButton = document.getElementById('signIn');
         const container = document.getElementById('container');
 
-        signUpButton.addEventListener('click', () => {
-            container.classList.add("right-panel-active");
-        });
+        // signUpButton.addEventListener('click', () => {
+        //     container.classList.add("right-panel-active");
+        // });
 
-        signInButton.addEventListener('click', () => {
-            container.classList.remove("right-panel-active");
-        });
+        // signInButton.addEventListener('click', () => {
+        //     container.classList.remove("right-panel-active");
+        // });
 
         function login(e){
-            e.preventDefault()
-            // console.log(e.target.username.value)
+            e.preventDefault();
+            const username = $('input[name="username"]').val();
+            const password = $('input[name="password"]').val();
+            if(username == ""){
+                $('#error-username').text("Username tidak boleh kosong")
+            }else{
+                $('#error-username').text("")
+            }
+
+            const data = {
+                username: username,
+                password: password,
+            };
+
+            //funtion from crud.js
+            let result = post(`${baseUrl}/check-login`, token, data)
+
+            console.log(result)
+
         }
     </script>
 </body>
